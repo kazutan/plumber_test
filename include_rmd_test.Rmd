@@ -1,0 +1,16 @@
+---
+title: "plumberを使ったRmdテスト"
+output: html_document
+params:
+  nrow: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## plumber apiでパラメータを渡すテスト
+
+```{r table, echo=FALSE}
+knitr::kable(head(iris, params$nrow))
+```

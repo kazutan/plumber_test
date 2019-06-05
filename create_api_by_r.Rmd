@@ -1,0 +1,192 @@
+---
+title: "RでWeb APIを作る"
+subtitle: "fukuoka.R #14"
+author: "kazutan"
+output:
+  revealjs::revealjs_presentation:
+    theme: sky
+    center: true
+    css: assets/for_revealjs_sky.css
+    self_contained: false
+    reveal_plugins: ["chalkboard", "notes"]
+    reveal_options:
+      chalkboard:
+        theme: whiteboard
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE,
+                      echo = TRUE,
+                      warning = FALSE,
+                      comment = "")
+```
+
+# はじめに
+
+## 自己紹介
+
+<div class="column1">
+- 前田 和寛(Maeda Kazuhiro)
+- 福岡で分析のおしごと
+- @kazutan
+    - Twitter
+    - GitHub
+    - Qiita
+- #宇宙本 #犬4匹本
+</div>
+<div class="column2">
+![icon](https://kazutan.github.io/RUserMeeting2016/pics/user.png)
+</div>
+
+## 今日のお話
+
+- 「APIがあったら叩きたくなる、それがRユーザー」
+- 「でも、自分でAPIが作れたら楽しくね?」
+- 「よし、APIを自作しよう…Rで」
+
+今日はRでAPIを作れるパッケージの紹介
+
+# plumberパッケージ
+
+## plumberパッケージとは?
+
+- Rでの処理を簡単にAPI化できるパッケージ
+- これを使えば、いつものRコードをAPIとして実装できる
+    - URIでアクセスすればいろいろできるようになる
+- RStudio v1.2からネイティブに対応
+    - 今回はRStudio v1.2での作業を前提とします
+- 詳細は以下のドキュメントを参照してください
+    - https://www.rplumber.io
+
+## インストール
+
+CRANにあるので、以下のコードでOK:
+
+```{r}
+install.packages("plumber")
+```
+
+# APIを作ってみよう {#intro1}
+
+## プロジェクトを作成
+
+- 新規でプロジェクトを作成
+    - `New Directory`を選択
+    - Plumber用のがあるので選択
+    - あとは適宜入力してOK
+
+サンプルを含んだプロジェクトが生成
+
+## サンプルを試してみよう
+
+- `plumber.R`ファイルを開く
+- `Run App`をクリック
+    - Viewer(もしくは別ウィンドウ)でAPIドキュメントが出てくる
+    - これでローカル上に実装されている
+- ブラウザで`http://127.0.0.1:8783/plot`へアクセス
+    - うまくいけば、Histogramが表示される
+- ブラウザで`http://127.0.0.1:8783/echo?msg=hoge`へアクセス
+    - うまくいけば、反応が返ってくる
+
+# 自作してみよう
+
+## パラメータ(クエリ)を利用して図を呼び出すAPI {#sample1}
+
+```{r}
+#* Plotting
+#* @param type type of iris
+#* @png
+#* @get /plot
+function(type = "setosa") {
+  df <- iris %>% 
+    filter(Species == type)
+  p <- ggplot(df, aes(Sepal.Length, Sepal.Width)) +
+    geom_point() +
+    ggtitle(type)
+  print(p)
+}
+```
+
+## leafletの地図を呼び出すAPI {#sample2}
+
+```{r}
+#* Map
+#* @param lng longtitude
+#* @param lat latitude
+#* @param zoom zoom
+#* @serializer htmlwidget
+#* @get /map
+function(lng = 135, lat = 38, zoom = 7) {
+  lng <- as.numeric(lng)
+  lat <- as.numeric(lat)
+  zoom <- as.numeric(zoom)
+  map <- leaflet(elementId = "mapWgt") %>% 
+    addTiles() %>% 
+    setView(lng = lng, lat = lat, zoom = zoom)
+  map
+}
+```
+
+## パラメータを利用したRmdからのドキュメント生成API {#sample3}
+
+Rmdファイル:
+
+```{r, eval=TRUE, echo=FALSE}
+x <- readLines("include_rmd_test.Rmd")
+cat(paste(x, collapse = "\n"))
+```
+
+
+---
+
+Rスクリプト:
+
+```{r}
+#* create report with rmd
+#* @param res res
+#* @serializer contentType list(type="application/html")
+#* @get /rmd_test
+function(res, nrow = 10) {
+  tmp <- tempfile()
+  rmarkdown::render("include_rmd_test.Rmd", output_file = tmp, params = list(nrow = nrow))
+  include_html(tmp, res)
+}
+```
+
+# FAQ
+
+## デプロイどうすんの?
+
+- ローカルでいいならよしなにやればOK
+- Web上でオープンにするなら、Docker imageを作成すると便利
+    - 詳しくはこのあたりを参照
+        - https://www.rplumber.io/docs/hosting.html
+    - ただし、セキュリティに関しては最新の注意を払うこと
+        - https://www.rplumber.io/docs/security.html
+
+## 使い所は?
+
+- Rでマシンラーニングを実装して、Web API化
+    - 割と気軽にできる
+- htmlwidgetsを利用したWebアプリ
+    - さっきの地図APIの応用
+- 自分に最適化したWebアプリケーション
+    - データをスクレイピングしてストック
+    - これを利用してポータルサイトを準備する
+
+可能性は無限大!
+
+## Shinyとの差別化は?
+
+- plumberはバックとフロントを切り離せる
+    - フロントはフロントの専門家にまわせる
+    - ただし、一人ですべてやるにはちょっとつらい
+- ShinyはRで両方作れる
+    - Rおじさんがすべてやる
+    - 良くも悪くもR/Shinyの制約を受ける
+
+## サンプルや資料が少ない
+
+- あなたが道を開けばいい
+
+## Enjoy!

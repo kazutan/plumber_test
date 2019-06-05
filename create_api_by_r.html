@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="kazutan" />
+  <title>RでWeb APIを作る</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="create_api_by_r_files/reveal.js-3.3.0.1/css/reveal.css"/>
+
+
+<style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="create_api_by_r_files/reveal.js-3.3.0.1/css/theme/sky.css" id="theme">
+
+
+  <!-- some tweaks to reveal css -->
+  <style type="text/css">
+    .reveal h1 { font-size: 2.0em; }
+    .reveal h2 { font-size: 1.5em;  }
+    .reveal h3 { font-size: 1.25em;	}
+    .reveal h4 { font-size: 1em;	}
+
+    .reveal .slides>section,
+    .reveal .slides>section>section {
+      padding: 0px 0px;
+    }
+
+
+
+    .reveal table {
+      border-width: 1px;
+      border-spacing: 2px;
+      border-style: dotted;
+      border-color: gray;
+      border-collapse: collapse;
+      font-size: 0.7em;
+    }
+
+    .reveal table th {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      font-weight: bold;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+    .reveal table td {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+
+  </style>
+
+    <style type="text/css">code{white-space: pre;}</style>
+
+    <link rel="stylesheet" href="assets/for_revealjs_sky.css"/>
+
+<!-- Printing and PDF exports -->
+<script id="paper-css" type="application/dynamic-css">
+
+/* Default Print Stylesheet Template
+   by Rob Glazebrook of CSSnewbie.com
+   Last Updated: June 4, 2008
+
+   Feel free (nay, compelled) to edit, append, and
+   manipulate this file as you see fit. */
+
+
+@media print {
+
+	/* SECTION 1: Set default width, margin, float, and
+	   background. This prevents elements from extending
+	   beyond the edge of the printed page, and prevents
+	   unnecessary background images from printing */
+	html {
+		background: #fff;
+		width: auto;
+		height: auto;
+		overflow: visible;
+	}
+	body {
+		background: #fff;
+		font-size: 20pt;
+		width: auto;
+		height: auto;
+		border: 0;
+		margin: 0 5%;
+		padding: 0;
+		overflow: visible;
+		float: none !important;
+	}
+
+	/* SECTION 2: Remove any elements not needed in print.
+	   This would include navigation, ads, sidebars, etc. */
+	.nestedarrow,
+	.controls,
+	.fork-reveal,
+	.share-reveal,
+	.state-background,
+	.reveal .progress,
+	.reveal .backgrounds {
+		display: none !important;
+	}
+
+	/* SECTION 3: Set body font face, size, and color.
+	   Consider using a serif font for readability. */
+	body, p, td, li, div {
+		font-size: 20pt!important;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		color: #000;
+	}
+
+	/* SECTION 4: Set heading font face, sizes, and color.
+	   Differentiate your headings from your body text.
+	   Perhaps use a large sans-serif for distinction. */
+	h1,h2,h3,h4,h5,h6 {
+		color: #000!important;
+		height: auto;
+		line-height: normal;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		text-shadow: 0 0 0 #000 !important;
+		text-align: left;
+		letter-spacing: normal;
+	}
+	/* Need to reduce the size of the fonts for printing */
+	h1 { font-size: 28pt !important;  }
+	h2 { font-size: 24pt !important; }
+	h3 { font-size: 22pt !important; }
+	h4 { font-size: 22pt !important; font-variant: small-caps; }
+	h5 { font-size: 21pt !important; }
+	h6 { font-size: 20pt !important; font-style: italic; }
+
+	/* SECTION 5: Make hyperlinks more usable.
+	   Ensure links are underlined, and consider appending
+	   the URL to the end of the link for usability. */
+	a:link,
+	a:visited {
+		color: #000 !important;
+		font-weight: bold;
+		text-decoration: underline;
+	}
+	/*
+	.reveal a:link:after,
+	.reveal a:visited:after {
+		content: " (" attr(href) ") ";
+		color: #222 !important;
+		font-size: 90%;
+	}
+	*/
+
+
+	/* SECTION 6: more reveal.js specific additions by @skypanther */
+	ul, ol, div, p {
+		visibility: visible;
+		position: static;
+		width: auto;
+		height: auto;
+		display: block;
+		overflow: visible;
+		margin: 0;
+		text-align: left !important;
+	}
+	.reveal pre,
+	.reveal table {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.reveal pre code {
+		padding: 20px;
+		border: 1px solid #ddd;
+	}
+	.reveal blockquote {
+		margin: 20px 0;
+	}
+	.reveal .slides {
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 0 !important;
+		zoom: 1 !important;
+
+		overflow: visible !important;
+		display: block !important;
+
+		text-align: left !important;
+		-webkit-perspective: none;
+		   -moz-perspective: none;
+		    -ms-perspective: none;
+		        perspective: none;
+
+		-webkit-perspective-origin: 50% 50%;
+		   -moz-perspective-origin: 50% 50%;
+		    -ms-perspective-origin: 50% 50%;
+		        perspective-origin: 50% 50%;
+	}
+	.reveal .slides section {
+		visibility: visible !important;
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+		display: block !important;
+		overflow: visible !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 60px 20px !important;
+		z-index: auto !important;
+
+		opacity: 1 !important;
+
+		page-break-after: always !important;
+
+		-webkit-transform-style: flat !important;
+		   -moz-transform-style: flat !important;
+		    -ms-transform-style: flat !important;
+		        transform-style: flat !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+
+		-webkit-transition: none !important;
+		   -moz-transition: none !important;
+		    -ms-transition: none !important;
+		        transition: none !important;
+	}
+	.reveal .slides section.stack {
+		padding: 0 !important;
+	}
+	.reveal section:last-of-type {
+		page-break-after: avoid !important;
+	}
+	.reveal section .fragment {
+		opacity: 1 !important;
+		visibility: visible !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+	}
+	.reveal section img {
+		display: block;
+		margin: 15px 0px;
+		background: rgba(255,255,255,1);
+		border: 1px solid #666;
+		box-shadow: none;
+	}
+
+	.reveal section small {
+		font-size: 0.8em;
+	}
+
+}  
+</script>
+
+
+<script id="pdf-css" type="application/dynamic-css">
+    
+/**
+ * This stylesheet is used to print reveal.js
+ * presentations to PDF.
+ *
+ * https://github.com/hakimel/reveal.js#pdf-export
+ */
+
+* {
+	-webkit-print-color-adjust: exact;
+}
+
+body {
+	margin: 0 auto !important;
+	border: 0;
+	padding: 0;
+	float: none !important;
+	overflow: visible;
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Remove any elements not needed in print. */
+.nestedarrow,
+.reveal .controls,
+.reveal .progress,
+.reveal .playback,
+.reveal.overview,
+.fork-reveal,
+.share-reveal,
+.state-background {
+	display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-shadow: 0 0 0 #000 !important;
+}
+
+.reveal pre code {
+	overflow: hidden !important;
+	font-family: Courier, 'Courier New', monospace !important;
+}
+
+ul, ol, div, p {
+	visibility: visible;
+	position: static;
+	width: auto;
+	height: auto;
+	display: block;
+	overflow: visible;
+	margin: auto;
+}
+.reveal {
+	width: auto !important;
+	height: auto !important;
+	overflow: hidden !important;
+}
+.reveal .slides {
+	position: static;
+	width: 100%;
+	height: auto;
+
+	left: auto;
+	top: auto;
+	margin: 0 !important;
+	padding: 0 !important;
+
+	overflow: visible;
+	display: block;
+
+	-webkit-perspective: none;
+	   -moz-perspective: none;
+	    -ms-perspective: none;
+	        perspective: none;
+
+	-webkit-perspective-origin: 50% 50%; /* there isn't a none/auto value but 50-50 is the default */
+	   -moz-perspective-origin: 50% 50%;
+	    -ms-perspective-origin: 50% 50%;
+	        perspective-origin: 50% 50%;
+}
+
+.reveal .slides section {
+	page-break-after: always !important;
+
+	visibility: visible !important;
+	position: relative !important;
+	display: block !important;
+	position: relative !important;
+
+	margin: 0 !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	min-height: 1px;
+
+	opacity: 1 !important;
+
+	-webkit-transform-style: flat !important;
+	   -moz-transform-style: flat !important;
+	    -ms-transform-style: flat !important;
+	        transform-style: flat !important;
+
+	-webkit-transform: none !important;
+	   -moz-transform: none !important;
+	    -ms-transform: none !important;
+	        transform: none !important;
+}
+
+.reveal section.stack {
+	margin: 0 !important;
+	padding: 0 !important;
+	page-break-after: avoid !important;
+	height: auto !important;
+	min-height: auto !important;
+}
+
+.reveal img {
+	box-shadow: none;
+}
+
+.reveal .roll {
+	overflow: visible;
+	line-height: 1em;
+}
+
+/* Slide backgrounds are placed inside of their slide when exporting to PDF */
+.reveal section .slide-background {
+	display: block !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: -1;
+}
+
+/* All elements should be above the slide-background */
+.reveal section>* {
+	position: relative;
+	z-index: 1;
+}
+
+/* Display slide speaker notes when 'showNotes' is enabled */
+.reveal .speaker-notes-pdf {
+	display: block;
+	width: 100%;
+	max-height: none;
+	left: auto;
+	top: auto;
+	z-index: 100;
+}
+
+/* Display slide numbers when 'slideNumber' is enabled */
+.reveal .slide-number-pdf {
+	display: block;
+	position: absolute;
+	font-size: 14px;
+}
+
+</script>
+
+
+<script>
+var style = document.createElement( 'style' );
+style.type = 'text/css';
+var style_script_id = window.location.search.match( /print-pdf/gi ) ? 'pdf-css' : 'paper-css';
+var style_script = document.getElementById(style_script_id).text;
+style.innerHTML = style_script;
+document.getElementsByTagName('head')[0].appendChild(style);
+</script>
+
+    <link href="create_api_by_r_files/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+    <link href="create_api_by_r_files/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">RでWeb APIを作る</h1>
+  <h1 class="subtitle">fukuoka.R #14</h1>
+    <h2 class="author">kazutan</h2>
+</section>
+
+<section><section class="title-slide slide level1"><h1>はじめに</h1></section><section class="slide level2">
+<h2>自己紹介</h2>
+<div class="column1">
+<ul>
+<li>前田 和寛(Maeda Kazuhiro)</li>
+<li>福岡で分析のおしごと</li>
+<li><span class="citation" data-cites="kazutan">@kazutan</span>
+<ul>
+<li>Twitter</li>
+<li>GitHub</li>
+<li>Qiita</li>
+</ul></li>
+<li>#宇宙本 #犬4匹本</li>
+</ul>
+</div>
+<div class="column2">
+<p><img data-src="https://kazutan.github.io/RUserMeeting2016/pics/user.png" alt="icon" /></p>
+</div>
+</section><section class="slide level2">
+<h2>今日のお話</h2>
+<ul>
+<li>「APIがあったら叩きたくなる、それがRユーザー」</li>
+<li>「でも、自分でAPIが作れたら楽しくね?」</li>
+<li>「よし、APIを自作しよう…Rで」</li>
+</ul>
+<p>今日はRでAPIを作れるパッケージの紹介</p>
+</section></section>
+<section><section id="plumber" class="title-slide slide level1"><h1>plumberパッケージ</h1></section><section id="plumber" class="slide level2">
+<h2>plumberパッケージとは?</h2>
+<ul>
+<li>Rでの処理を簡単にAPI化できるパッケージ</li>
+<li>これを使えば、いつものRコードをAPIとして実装できる
+<ul>
+<li>URIでアクセスすればいろいろできるようになる</li>
+</ul></li>
+<li>RStudio v1.2からネイティブに対応
+<ul>
+<li>今回はRStudio v1.2での作業を前提とします</li>
+</ul></li>
+<li>詳細は以下のドキュメントを参照してください
+<ul>
+<li><a href="https://www.rplumber.io" class="uri">https://www.rplumber.io</a></li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+<h2>インストール</h2>
+<p>CRANにあるので、以下のコードでOK:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">install.packages</span>(<span class="st">&quot;plumber&quot;</span>)</a></code></pre></div>
+</section></section>
+<section><section id="intro1" class="title-slide slide level1"><h1>APIを作ってみよう</h1></section><section class="slide level2">
+<h2>プロジェクトを作成</h2>
+<ul>
+<li>新規でプロジェクトを作成
+<ul>
+<li><code>New Directory</code>を選択</li>
+<li>Plumber用のがあるので選択</li>
+<li>あとは適宜入力してOK</li>
+</ul></li>
+</ul>
+<p>サンプルを含んだプロジェクトが生成</p>
+</section><section class="slide level2">
+<h2>サンプルを試してみよう</h2>
+<ul>
+<li><code>plumber.R</code>ファイルを開く</li>
+<li><code>Run App</code>をクリック
+<ul>
+<li>Viewer(もしくは別ウィンドウ)でAPIドキュメントが出てくる</li>
+<li>これでローカル上に実装されている</li>
+</ul></li>
+<li>ブラウザで<code>http://127.0.0.1:8783/plot</code>へアクセス
+<ul>
+<li>うまくいけば、Histogramが表示される</li>
+</ul></li>
+<li>ブラウザで<code>http://127.0.0.1:8783/echo?msg=hoge</code>へアクセス
+<ul>
+<li>うまくいけば、反応が返ってくる</li>
+</ul></li>
+</ul>
+</section></section>
+<section><section class="title-slide slide level1"><h1>自作してみよう</h1></section><section id="sample1" class="slide level2">
+<h2>パラメータ(クエリ)を利用して図を呼び出すAPI</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co">#* Plotting</span></a>
+<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="co">#* @param type type of iris</span></a>
+<a class="sourceLine" id="cb2-3" data-line-number="3"><span class="co">#* @png</span></a>
+<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="co">#* @get /plot</span></a>
+<a class="sourceLine" id="cb2-5" data-line-number="5"><span class="cf">function</span>(<span class="dt">type =</span> <span class="st">&quot;setosa&quot;</span>) {</a>
+<a class="sourceLine" id="cb2-6" data-line-number="6">  df &lt;-<span class="st"> </span>iris <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb2-7" data-line-number="7"><span class="st">    </span><span class="kw">filter</span>(Species <span class="op">==</span><span class="st"> </span>type)</a>
+<a class="sourceLine" id="cb2-8" data-line-number="8">  p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(Sepal.Length, Sepal.Width)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb2-9" data-line-number="9"><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></a>
+<a class="sourceLine" id="cb2-10" data-line-number="10"><span class="st">    </span><span class="kw">ggtitle</span>(type)</a>
+<a class="sourceLine" id="cb2-11" data-line-number="11">  <span class="kw">print</span>(p)</a>
+<a class="sourceLine" id="cb2-12" data-line-number="12">}</a></code></pre></div>
+</section><section id="sample2" class="slide level2">
+<h2>leafletの地図を呼び出すAPI</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="co">#* Map</span></a>
+<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="co">#* @param lng longtitude</span></a>
+<a class="sourceLine" id="cb3-3" data-line-number="3"><span class="co">#* @param lat latitude</span></a>
+<a class="sourceLine" id="cb3-4" data-line-number="4"><span class="co">#* @param zoom zoom</span></a>
+<a class="sourceLine" id="cb3-5" data-line-number="5"><span class="co">#* @serializer htmlwidget</span></a>
+<a class="sourceLine" id="cb3-6" data-line-number="6"><span class="co">#* @get /map</span></a>
+<a class="sourceLine" id="cb3-7" data-line-number="7"><span class="cf">function</span>(<span class="dt">lng =</span> <span class="dv">135</span>, <span class="dt">lat =</span> <span class="dv">38</span>, <span class="dt">zoom =</span> <span class="dv">7</span>) {</a>
+<a class="sourceLine" id="cb3-8" data-line-number="8">  lng &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(lng)</a>
+<a class="sourceLine" id="cb3-9" data-line-number="9">  lat &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(lat)</a>
+<a class="sourceLine" id="cb3-10" data-line-number="10">  zoom &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(zoom)</a>
+<a class="sourceLine" id="cb3-11" data-line-number="11">  map &lt;-<span class="st"> </span><span class="kw">leaflet</span>(<span class="dt">elementId =</span> <span class="st">&quot;mapWgt&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb3-12" data-line-number="12"><span class="st">    </span><span class="kw">addTiles</span>() <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb3-13" data-line-number="13"><span class="st">    </span><span class="kw">setView</span>(<span class="dt">lng =</span> lng, <span class="dt">lat =</span> lat, <span class="dt">zoom =</span> zoom)</a>
+<a class="sourceLine" id="cb3-14" data-line-number="14">  map</a>
+<a class="sourceLine" id="cb3-15" data-line-number="15">}</a></code></pre></div>
+</section><section id="sample3" class="slide level2">
+<h2>パラメータを利用したRmdからのドキュメント生成API</h2>
+<p>Rmdファイル:</p>
+<pre><code>---
+title: &quot;plumberを使ったRmdテスト&quot;
+output: html_document
+params:
+  nrow: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## plumber apiでパラメータを渡すテスト
+
+```{r table, echo=FALSE}
+knitr::kable(head(iris, params$nrow))
+```</code></pre>
+</section><section class="slide level2">
+
+<p>Rスクリプト:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="co">#* create report with rmd</span></a>
+<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="co">#* @param res res</span></a>
+<a class="sourceLine" id="cb5-3" data-line-number="3"><span class="co">#* @serializer contentType list(type=&quot;application/html&quot;)</span></a>
+<a class="sourceLine" id="cb5-4" data-line-number="4"><span class="co">#* @get /rmd_test</span></a>
+<a class="sourceLine" id="cb5-5" data-line-number="5"><span class="cf">function</span>(res, <span class="dt">nrow =</span> <span class="dv">10</span>) {</a>
+<a class="sourceLine" id="cb5-6" data-line-number="6">  tmp &lt;-<span class="st"> </span><span class="kw">tempfile</span>()</a>
+<a class="sourceLine" id="cb5-7" data-line-number="7">  rmarkdown<span class="op">::</span><span class="kw">render</span>(<span class="st">&quot;include_rmd_test.Rmd&quot;</span>, <span class="dt">output_file =</span> tmp, <span class="dt">params =</span> <span class="kw">list</span>(<span class="dt">nrow =</span> nrow))</a>
+<a class="sourceLine" id="cb5-8" data-line-number="8">  <span class="kw">include_html</span>(tmp, res)</a>
+<a class="sourceLine" id="cb5-9" data-line-number="9">}</a></code></pre></div>
+</section></section>
+<section><section id="faq" class="title-slide slide level1"><h1>FAQ</h1></section><section class="slide level2">
+<h2>デプロイどうすんの?</h2>
+<ul>
+<li>ローカルでいいならよしなにやればOK</li>
+<li>Web上でオープンにするなら、Docker imageを作成すると便利
+<ul>
+<li>詳しくはこのあたりを参照
+<ul>
+<li><a href="https://www.rplumber.io/docs/hosting.html" class="uri">https://www.rplumber.io/docs/hosting.html</a></li>
+</ul></li>
+<li>ただし、セキュリティに関しては最新の注意を払うこと
+<ul>
+<li><a href="https://www.rplumber.io/docs/security.html" class="uri">https://www.rplumber.io/docs/security.html</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+<h2>使い所は?</h2>
+<ul>
+<li>Rでマシンラーニングを実装して、Web API化
+<ul>
+<li>割と気軽にできる</li>
+</ul></li>
+<li>htmlwidgetsを利用したWebアプリ
+<ul>
+<li>さっきの地図APIの応用</li>
+</ul></li>
+<li>自分に最適化したWebアプリケーション
+<ul>
+<li>データをスクレイピングしてストック</li>
+<li>これを利用してポータルサイトを準備する</li>
+</ul></li>
+</ul>
+<p>可能性は無限大!</p>
+</section><section id="shiny" class="slide level2">
+<h2>Shinyとの差別化は?</h2>
+<ul>
+<li>plumberはバックとフロントを切り離せる
+<ul>
+<li>フロントはフロントの専門家にまわせる</li>
+<li>ただし、一人ですべてやるにはちょっとつらい</li>
+</ul></li>
+<li>ShinyはRで両方作れる
+<ul>
+<li>Rおじさんがすべてやる</li>
+<li>良くも悪くもR/Shinyの制約を受ける</li>
+</ul></li>
+</ul>
+</section><section class="slide level2">
+<h2>サンプルや資料が少ない</h2>
+<ul>
+<li>あなたが道を開けばいい</li>
+</ul>
+</section><section id="enjoy" class="slide level2">
+<h2>Enjoy!</h2>
+</section></section>
+    </div>
+  </div>
+
+  <script src="create_api_by_r_files/reveal.js-3.3.0.1/lib/js/head.min.js"></script>
+  <script src="create_api_by_r_files/reveal.js-3.3.0.1/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Push each slide change to the browser history
+        history: true,
+        // Vertical centering of slides
+        center: true,
+        // Transition style
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+
+
+
+        chalkboard: {
+          theme: 'whiteboard',
+        },
+
+        keyboard: {
+          67: function() { RevealChalkboard.toggleNotesCanvas() },    // toggle notes canvas when 'c' is pressed
+          66: function() { RevealChalkboard.toggleChalkboard() }, // toggle chalkboard when 'b' is pressed
+          46: function() { RevealChalkboard.clear() },    // clear chalkboard when 'DEL' is pressed
+           8: function() { RevealChalkboard.reset() },    // reset chalkboard data on current slide when 'BACKSPACE' is pressed
+          68: function() { RevealChalkboard.download() }, // downlad recorded chalkboard drawing when 'd' is pressed
+        },
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'create_api_by_r_files/reveal.js-3.3.0.1/plugin/notes/notes.js', async: true },
+          { src: 'create_api_by_r_files/reveal.js-3.3.0.1/plugin/chalkboard/chalkboard.js', async: true },
+        ]
+      });
+    </script>
+  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+      document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+
+<script>
+  (function() {
+    if (window.jQuery) {
+      Reveal.addEventListener( 'slidechanged', function(event) {  
+        window.jQuery(event.previousSlide).trigger('hidden');
+        window.jQuery(event.currentSlide).trigger('shown');
+      });
+    }
+  })();
+</script>
+
+
+  </body>
+</html>
